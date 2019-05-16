@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <title>HTA TOOL</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="js/bootstrap-filestyle.min.js"> </script>
+        <script type="text/javascript" src="js/Rectangle.js"> </script>
+        <script type="text/javascript" src="js/Plan.js"> </script>
+        <script type="text/javascript" src="js/Save.js"> </script>
+        <script type="text/javascript" src="js/Print.js"> </script>
+
+        <!-- Required to convert named colors to RGB -->
+        <!--<script src="https://cdn.jsdelivr.net/npm/rgbcolor@^1/index.js"></script>-->
+        <!-- Optional if you want blur -->
+        <!--<script src="https://cdn.jsdelivr.net/npm/stackblur-canvas@^1/dist/stackblur.min.js"></script>-->
+        <!-- Main canvg code -->
+        <!--<script src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>-->
+
+        <script src="https://unpkg.com/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body id="body">
+
+    <aside style="position: fixed; right: 0;height: 100%; width: 270px; background-color: whitesmoke;">
+        <div style="margin-bottom: 20px; margin-top: 50px;">
+        <p><a  style="margin-right: 10%; margin-left: 10%" name="save" class="btn btn-outline-success" download="backup.json" id="save" title="save">Save</a>
+        </p>    <p> <input style="margin-right: 10%; margin-left: 10%" type="button" class="btn btn-outline-primary" name="resize" id="resizeboxes" value="Resize Boxes" >
+            </p> <p><input style="margin-right: 10%; margin-left: 10%" type="button" class="btn btn-outline-primary" name="autoalign" id="autoalign" value="Auto Align Boxes" >
+        </p>  <p><input type="button" class="btn btn-outline-secondary" id="svgresize" style="margin-right: 10%; margin-left: 10%" value="Increase SVG Size" >
+            <!--   <p>
+             <input class="btn btn-outline-primary" id="namethefile" >
+        </p> -->
+        </p> <p><a style="margin-right: 10%; margin-left: 10%" name="print" class="btn btn-outline-info" download="image.png" id="print"  title="print" >Save to Print</a>
+        </p>
+        </div>
+
+            <label id="labelParentId" style="margin-left: 10%; font-size: larger; font-style: italic; font-family: 'Calibri Light','Californian FB','Segoe MDL2 Assets'" class="col-form-label">Parent Id Selected: 0</label>
+        <label id="labelCount" style="margin-left: 10%; font-size: larger; font-style: italic; font-family: 'Calibri Light','Californian FB','Segoe MDL2 Assets'" class="col-form-label">Box count: 1</label>
+
+        <div class="form-group row" style="margin-left: 10%">
+            <label for="colourpicker" class="col-2 col-form-label">Color</label>
+            <div class="col-4">
+                <input class="form-control" type="color" value="#563d7c" id="colourpicker">
+            </div>
+        </div>
+        <p>
+            Instructions: <br> 1) Click a rectangle to make it a parent first <br> 2) Double click to create a new rectangle i.e. a child <br> 3) Click and drag the rectangle from the top
+        </p>
+    </aside>
+   <div id="wrapper">
+    <svg height="800" width="1100" id="svgtag" style="border: green" xmlns="http://www.w3.org/2000/svg"></svg>
+   </div>
+        <div class="modal" id="myModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Hierarchy Task Analysis Tool</h5>
+                    </div>
+                    <div class="modal-body">
+                        <input type="file" class="filestyle"  id="loadfile" data-classButton="btn btn-outline-info" data-input="false" data-classIcon="icon-plus" data-buttonText="Load Project">
+                        <input name="startnew" style="margin-top: 10px;" class="btn btn-outline-primary" value="Start New Project" type="button" id="startnew">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(window).on('load',function(){
+                $('#myModal').modal({
+                    backdrop: 'static',
+                    keyboard: false,
+                    show: true
+                });
+            });
+            $('#startnew').on('click' , function() {
+                $('.modal').modal('hide')
+            });
+            $('#loadfile').on('change' , function() {
+                $('.modal').modal('hide')
+            });
+        </script>
+    </body>
+</html>
+<script>
+   var body5 = document.getElementById("body");
+   var svgtag = document.getElementById("svgtag");
+   var saveButton = document.getElementById("save");
+   var loadButton = document.getElementById("loadfile");
+   var startNewButton = document.getElementById("startnew");
+   var resizeBoxesButton = document.getElementById("resizeboxes");
+   var autoAlignButton = document.getElementById("autoalign");
+   var colourPickerButton = document.getElementById("colourpicker");
+   var svgResizeButton = document.getElementById("svgresize");
+   var noOfRectangle = 0;
+   var boxes = [];
+   var plans = [];
+   var maxWidth = 0;
+   var maxHeight = 0;
+
+
+   function init()
+   {
+       rootNode = new Rectangle(350,30,150,65,noOfRectangle,-1,function () {
+           return boxes;
+       });
+       rootNode.drawMessage();
+       planNode = new Plan(550,35,150,65,"",noOfRectangle++,0);
+       boxes.push(rootNode);
+       changeBoxLength();
+       plans.push(planNode);
+   }
+
+   function findPlan(id) {
+       return plans.find( plan => plan.id === id);
+   }
+
+   function changeBoxLength()
+   {
+       document.getElementById('labelCount').innerHTML = "Box count: " + boxes.length;
+   }
+
+   function deleteBox()
+   { // when the function is called it finds the selected item to delete and return that rect obj
+       var rectangle =  boxes.find( box => box.id == Rectangle.getSelectedItemToDelete());
+       // it check if it has children if it does then cant be deleted
+       var checkingIfHasChildren =  boxes.filter( box => box.parentId == rectangle.id);
+       // check if it has right siblings because if it does then again we need to go throught
+       // all of them and change their number and their childrens number
+       var checkingIfHasSiblings =  boxes.filter( box => box.parentId == rectangle.parentId);
+       if (checkingIfHasChildren.length === 0)
+       {
+           // this checks if the child deleted is the last one of the parent
+           // if it is then delete the parent plan
+           if (checkingIfHasSiblings.length === 1 && checkingIfHasSiblings[0].parentId !== 0)
+           {
+               var planToDelete = findPlan(checkingIfHasSiblings[0].parentId);
+               planToDelete.deletePlan();
+               var indexToDelete =   plans.indexOf(planToDelete);
+               plans.splice(indexToDelete,1);
+           }
+           // calls the rectangle object deleteBox function to delete the elements from the html
+           rectangle.deleteBox();
+           // the rest of the code is to check if the right children exist
+           // if they do then it reassign them numbers
+           var number = rectangle.number;
+           var allNumbers = number.split('.');
+           var lastItem = parseInt(allNumbers[allNumbers.length - 1]);
+           var parentId = rectangle.parentId;
+           var index = boxes.indexOf(rectangle);
+           boxes.splice(index,1);
+           changeBoxLength();
+           Rectangle.selectedItemToDelete = 0;
+           var offset = 1;
+           var siblingNodes =  boxes.filter( box => box.parentId == parentId);
+           if (siblingNodes.length > 0)
+           {
+               var arrayRightSiblings =  siblingNodes.filter( box => {
+                   var allNum = box.number.split('.');
+                   var lastItem2 = parseInt(allNum[allNum.length - 1]);
+                   return lastItem2 > lastItem;
+               });
+               arrayRightSiblings.forEach(function (element) {
+                   var allNum = element.number.split('.');
+                   var lastItem2 = parseInt(allNum[allNum.length - 1]);
+                   allNum[allNum.length - 1] = lastItem2 - 1;
+                   element.number = allNum.join('.'); //
+                   var plan = findPlan(element.id);
+                   if (plan !== undefined)
+                   {
+                       plan.number = allNum.join('.');
+                       document.getElementById('planInnerp'+element.id).innerHTML = element.number;
+                   }
+                   document.getElementById('innerp'+element.id).innerHTML = element.number; //
+                   reNumberBoxes(element,offset);
+               });
+           }
+       }
+       else
+       {alert("cant delete this box");}
+   }
+
+   function reNumberBoxes(element, offset) {
+       offset++;
+       console.log("i am in renumber boxes function");
+       console.log(element);
+       var childrenNodes =  boxes.filter( box => box.parentId == element.id);
+
+       if (childrenNodes.length > 0)
+       {
+           childrenNodes.forEach(function (element) {
+               var allNum = element.number.split('.');
+               var lastItem2 = parseInt(allNum[allNum.length - offset]);
+               allNum[allNum.length - offset] = lastItem2 - 1;
+               element.number = allNum.join('.');
+               var plan = findPlan(element.id);
+               if (plan !== undefined)
+               {
+                   plan.number = allNum.join('.');
+                   document.getElementById('planInnerp'+element.id).innerHTML = element.number;
+               }
+
+               document.getElementById('innerp'+element.id).innerHTML = element.number;
+
+               reNumberBoxes(element,offset);
+           });
+       }
+   }
+    // this is passed parent ids in an array and the array to populate
+   function buildRowArray(parentIds, arrayToPopulate) {
+       // this gets us the children ids
+       var childrenIds = boxes.filter( box => {
+           return parentIds.includes(parseInt(box.parentId));
+       }).map(box => box.id);
+       // if there are then add them to the array and call this function again
+       // until there are no more ids left
+       if (childrenIds.length > 0)
+       {
+           arrayToPopulate.push(childrenIds);
+           buildRowArray(childrenIds, arrayToPopulate);
+       }
+   }
+
+   function changeBoxesColour()
+   {
+       boxes.forEach(function (object) {
+           object.setColour(colourPickerButton.value);
+       });
+   }
+
+   function findBox(id) {
+       return boxes.find( box => box.id == id);
+   }
+
+   // find the coordinates of the user click on the SVG
+   // and not the whole page
+   function  getMousePosition(evt) {
+       var CTM = svgtag.getScreenCTM();
+       return {
+           x: (evt.clientX - CTM.e) / CTM.a,
+           y: (evt.clientY - CTM.f) / CTM.d
+       };
+   }
+
+   function increaseSvg(){
+       svgtag.setAttribute('width',parseInt(svgtag.getAttribute('width')) + 200);
+       svgtag.setAttribute('height',parseInt(svgtag.getAttribute('height')) + 150);
+   }
+
+
+   function autoAlignBoxes()
+   {
+       // calls buildRowArray function to get the ids
+       let localRowArray = [];
+       buildRowArray([-1], localRowArray);
+       var height = 0;
+       // for loop to go over every element in the 2d array
+       localRowArray.forEach(function (element) {
+           if (!element.includes(0))
+           {
+               // get the rectangles object start from level 1
+               var localBoxes =  element.map(id => findBox(id));
+               // go through them and change the position of the boxes
+               localBoxes.forEach( box => {
+                   box.moveBox(height);
+               });
+           }
+           // save the height for the next level
+           height = findBox(element[0]).height + findBox(element[0]).y + 140;
+       })
+   }
+
+   // resize boxes function looks through the array of rectangle objects
+   // it finds the width of the biggest rectangle
+   // it finds the height of the biggest box
+   // it assigns those new values to every single rectangle in the array
+   // changes the width of the foreign object as well to move the text properly
+   function resizeBoxes() {
+       boxes.forEach(function (entry) {
+           if ( entry.width > maxWidth)
+           {
+               maxWidth = entry.width;
+           }
+           console.log(document.getElementById(entry.id));
+           if (entry.height > maxHeight)
+           {
+               maxHeight = entry.height;
+           }
+       });
+       boxes.forEach(function (entry) {
+           rect = document.getElementById(entry.id);
+           entry.width = maxWidth;
+           console.log(entry.width);
+           entry.height = maxHeight;
+           console.log(entry.height);
+           rect.setAttribute('width',maxWidth + 10);
+           rect.setAttribute('height',maxHeight + 55);
+           let innerg = document.getElementById('innerg'+entry.id);
+           let foreignObj = document.getElementById('foreignobject'+entry.id);
+           foreignObj.setAttribute('width',entry.width);
+           console.log(document.getElementById('innerg'+entry.id));
+           var values = entry.getValues();
+           console.log("in for loop: "+values);
+           innerg.setAttribute("transform","translate("+(values[0])+","+(values[1])+")")
+       });
+   }
+
+   function createARectangle(x,y) {
+       let parentNode = Rectangle.getSelectedItemToDelete();
+       let i = 0;
+       for (i; i < boxes.length; i++)
+       {
+           var r = boxes[i];
+           // if statement to check if parent node exist
+           // if parentNode variable matches an id of a rectangle then that means that rectangle can be parent so it exists
+           if (parentNode == r.id)
+           {
+               var rect = new Rectangle(x,y,150,65,noOfRectangle++,parentNode,function () {
+                   return boxes;
+               });
+               rect.drawMessage();
+               boxes.push(rect);
+               changeBoxLength();
+               rect.drawLines(rect.id, r.id);
+               var findingChildrenLength = boxes.filter( box => box.parentId == parentNode && box.parentId !== 0);
+               if (findingChildrenLength.length === 1)
+               {
+                   let parent = findBox(findingChildrenLength[0].parentId);
+                   planNode = new Plan(parent.x+15,parent.y-80,100,45,"",parent.id,parent.number);
+                   plans.push(planNode);
+               }
+               break;
+           }
+       }
+   }
+
+   body5.addEventListener('keydown',function (event) {
+       if (event.keyCode == 46) deleteBox();
+   }, false);
+
+   startNewButton.addEventListener('click',function () {
+       init();
+   },false);
+
+   svgResizeButton.addEventListener('click',function () {
+       increaseSvg();
+   },false);
+
+   colourPickerButton.addEventListener('change',function () {
+       changeBoxesColour()
+   },false);
+
+   resizeBoxesButton.addEventListener('click',function () {
+       resizeBoxes();
+   },false);
+
+   saveButton.addEventListener('click',function () {
+       saveData();
+   },false);
+
+   document.getElementById('print').addEventListener('click',function () {
+       print();
+   },false);
+
+   autoAlignButton.addEventListener('click',function () {
+     autoAlignBoxes();
+   },false);
+
+   svgtag.addEventListener("dblclick", function (event) {
+       createARectangle(getMousePosition(event).x,getMousePosition(event).y);
+   },false);
+
+   loadButton.addEventListener('change',function (event) {
+       var fileReader = new FileReader();
+       fileReader.onload = (function (file) {
+           return function (e) {
+               var json = JSON.parse(e.target.result);
+                json.boxes.forEach(function (element) {
+                  rect = new Rectangle(element.x,element.y,element.width,element.height,element.id,element.parentId,function () {
+                      return boxes;
+                  });
+                  rect.setText(element.message);
+                  rect.setColour(element.brightness);
+                  rect.drawMessage();
+                  boxes.push(rect);
+                  changeBoxLength();
+                  if (noOfRectangle < rect.id)
+                  {
+                      noOfRectangle = rect.id;
+                  }
+                  if (rect.parentId >= 0)
+                  {
+                     var rect = findBox(rect.id);
+                      rect.drawLines(rect.id,rect.parentId);
+                  }
+                });
+               json.plans.forEach(function (element) {
+                   plan = new Plan(element.x,element.y,element.width,element.height,element.message,element.id,element.number);
+                   plan.setText(element.message);
+                   plans.push(plan);
+               });
+                noOfRectangle++;
+           }
+       })(event.target.files[0]);
+       fileReader.readAsText(event.target.files[0]);
+   },false);
+
+</script>
